@@ -1,13 +1,13 @@
-import User from "../db/models/contact.js";
+import Contact from "../db/models/contact.js";
 
 export const listContacts = async () => {
-  const data = await User.findAll();
+  const data = await Contact.findAll();
 
   return data;
 };
 
 export const getContactById = async (id) => {
-  const contact = await User.findOne({ where: { id } });
+  const contact = await Contact.findOne({ where: { id } });
 
   return contact;
 };
@@ -25,12 +25,12 @@ export const removeContact = async (id) => {
 };
 
 export const addContact = async (name, email, phone, favorite = false) => {
-  const contact = User.create({ name, email, phone, favorite });
+  const contact = Contact.create({ name, email, phone, favorite });
   return contact;
 };
 
 export const updateContact = async (id, data) => {
-  const [updated] = await User.update(data, { where: { id } });
+  const [updated] = await Contact.update(data, { where: { id } });
 
   if (!updated) {
     return null;
@@ -38,4 +38,3 @@ export const updateContact = async (id, data) => {
 
   return getContactById(id);
 };
-
