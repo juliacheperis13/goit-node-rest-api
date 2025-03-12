@@ -7,23 +7,44 @@ import {
   updateContact,
 } from "../controllers/contactsControllers.js";
 
-import { createContactSchema, updateContactFavSchema, updateContactSchema } from "../schemas/contactsSchemas.js";
+import {
+  createContactSchema,
+  updateContactFavSchema,
+  updateContactSchema,
+} from "../schemas/contactsSchemas.js";
 
 import ctrlWrapper from "../helpers/ctrlWrapper.js";
 import validateBody from "../helpers/validateBody.js";
 
+import authenticate from "../middlewares/authenticate.js";
+
 const contactsRouter = express.Router();
 
-contactsRouter.get("/", ctrlWrapper(getAllContacts));
+contactsRouter.get("/", authenticate, ctrlWrapper(getAllContacts));
 
-contactsRouter.get("/:id", ctrlWrapper(getOneContact));
+contactsRouter.get("/:id", authenticate, ctrlWrapper(getOneContact));
 
-contactsRouter.delete("/:id", ctrlWrapper(deleteContact));
+contactsRouter.delete("/:id", authenticate, ctrlWrapper(deleteContact));
 
-contactsRouter.post("/", validateBody(createContactSchema), ctrlWrapper(createContact));
+contactsRouter.post(
+  "/",
+  authenticate,
+  validateBody(createContactSchema),
+  ctrlWrapper(createContact)
+);
 
-contactsRouter.put("/:id", validateBody(updateContactSchema), ctrlWrapper(updateContact));
+contactsRouter.put(
+  "/:id",
+  authenticate,
+  validateBody(updateContactSchema),
+  ctrlWrapper(updateContact)
+);
 
-contactsRouter.patch("/:id/favorite", validateBody(updateContactFavSchema), ctrlWrapper(updateContact));
+contactsRouter.patch(
+  "/:id/favorite",
+  authenticate,
+  validateBody(updateContactFavSchema),
+  ctrlWrapper(updateContact)
+);
 
 export default contactsRouter;
