@@ -17,7 +17,10 @@ import {
   logout,
   getCurrent,
   changeSubscription,
+  changeAvatar,
 } from "../controllers/authControllers.js";
+
+import upload from "../middlewares/upload.js";
 
 const authRouter = Router();
 
@@ -37,6 +40,8 @@ authRouter.patch(
 );
 
 authRouter.get("/current", authenticate, ctrlWrapper(getCurrent));
+
+authRouter.patch("/avatars", authenticate, upload.single("avatar"), ctrlWrapper(changeAvatar));
 
 authRouter.post("/logout", authenticate, ctrlWrapper(logout));
 
