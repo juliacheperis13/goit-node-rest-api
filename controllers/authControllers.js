@@ -66,3 +66,21 @@ export const changeAvatar = async (req, res) => {
 
   res.json({ avatarURL: result.avatarURL });
 };
+
+export const verify = async (req, res) => {
+  const { verificationToken } = req.params;
+  await authServices.verifyUser({ verificationToken });
+
+  res.json({
+    message: "Verification successful",
+  });
+};
+
+export const resendVerify = async (req, res) => {
+  const { email } = req.body;
+  await authServices.resendVerifyEmail(email);
+
+  res.json({
+    message: "Verification email sent",
+  });
+};

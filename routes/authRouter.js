@@ -9,6 +9,7 @@ import {
   authRegisterSchema,
   authLoginSchema,
   subscriptionChangeSchema,
+  authVerifySchema,
 } from "../schemas/authSchemas.js";
 
 import {
@@ -18,6 +19,8 @@ import {
   getCurrent,
   changeSubscription,
   changeAvatar,
+  verify,
+  resendVerify,
 } from "../controllers/authControllers.js";
 
 import upload from "../middlewares/upload.js";
@@ -31,6 +34,10 @@ authRouter.post(
 );
 
 authRouter.post("/login", validateBody(authLoginSchema), ctrlWrapper(login));
+
+authRouter.post("/verify", validateBody(authVerifySchema),  ctrlWrapper(resendVerify));
+
+authRouter.get("/verify/:verificationToken", ctrlWrapper(verify));
 
 authRouter.patch(
   "/subscription",

@@ -8,6 +8,22 @@ import HttpError from "../helpers/HttpError.js";
 
 import { createToken } from "../helpers/jwt.js";
 
+import sendEmail from "../helpers/sendEmail.js";
+
+import { nanoid } from "nanoid";
+
+import 'dotenv/config';
+
+const { BASE_URL } = process.env;
+
+const createVerifyEmail = (email, verificationToken) => {
+  return {
+    to: email,
+    subject: "Verify email",
+    html: `<a target="_blank" href="${BASE_URL}/api/auth/verify/${verificationToken}">Verify email</a>`,
+  };
+};
+
 export const findUser = (query) =>
   User.findOne({
     where: query,
@@ -36,12 +52,19 @@ export const signupUser = async (payload) => {
 
   const hashPassword = await bcrypt.hash(password, 10);
   const avatarURL = gravatar.url(email, { s: "250", d: "retro" }, true);
+  const verificationToken = nanoid();
 
   const newUser = await User.create({
     ...payload,
     password: hashPassword,
     avatarURL,
+    verificationToken,
   });
+
+  const verifyEmail = createVerifyEmail(email, verificationToken);
+
+  await sendEmail(verifyEmail);
+
   return newUser;
 };
 
@@ -52,8 +75,13 @@ export const signinUser = async (payload) => {
       email,
     },
   });
+
   if (!user) {
     throw HttpError(401, "Email or password is wrong");
+  }
+
+  if (!user.verify) {
+    throw HttpError(401, "Email is not verified");
   }
 
   const paswordCompare = await bcrypt.compare(password, user.password);
@@ -74,6 +102,35 @@ export const signinUser = async (payload) => {
     email,
     subscription: user.subscription,
   };
+};
+
+export const resendVerifyEmail = async (email) => {
+  const user = await findUser({ email });
+
+  if (!user) {
+    throw HttpError(401, "User not found");
+  }
+
+  if (!!user.verify) {
+    throw HttpError(400, "Verification has already been passed");
+  }
+
+  const verifyEmail = createVerifyEmail(email, user.verificationToken);
+
+  return sendEmail(verifyEmail);
+};
+
+export const verifyUser = async ({ verificationToken }) => {
+  const user = await findUser({ verificationToken });
+
+  if (!user) {
+    throw HttpError(404, "User not found");
+  }
+
+  return updateUser(
+    { verificationToken },
+    { verificationToken: null, verify: true }
+  );
 };
 
 export const changeSubscription = async (query, { subscription }) => {
