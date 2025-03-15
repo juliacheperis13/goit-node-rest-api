@@ -1,4 +1,8 @@
 import * as authServices from "../services/authServices.js";
+import path from "node:path";
+import fs from "node:fs/promises";
+
+const avatarsPath = path.resolve("public", "avatars");
 
 export const register = async (req, res) => {
   const result = await authServices.signupUser(req.body);
@@ -12,7 +16,7 @@ export const register = async (req, res) => {
 };
 
 export const login = async (req, res) => {
-  const result = await authServices.siginUser(req.body);
+  const result = await authServices.signinUser(req.body);
 
   res.json({
     token: result.token,
@@ -24,7 +28,10 @@ export const login = async (req, res) => {
 };
 
 export const changeSubscription = async (req, res) => {
-  const { subscription } = await authServices.changeSubscription(req.user.id, req.body);
+  const { subscription } = await authServices.changeSubscription(
+    req.user.id,
+    req.body
+  );
 
   res.json({ subscription });
 };
@@ -43,4 +50,19 @@ export const logout = async (req, res) => {
   await authServices.signoutUser({ id });
 
   res.sendStatus(204);
+};
+
+export const changeAvatar = async (req, res) => {
+  let avatar = null;
+  if (req.file) {
+    const { path: oldPath, filename } = req.file;
+    const newPath = path.join(avatarsPath, filename);
+    await fs.rename(oldPath, newPath);
+    avatar = path.join("avatars", filename);
+  }
+
+  const { id } = req.user;
+  const result = await authServices.changeAvatar({ id }, avatar);
+
+  res.json({ avatarURL: result.avatarURL });
 };

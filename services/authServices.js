@@ -1,5 +1,7 @@
 import bcrypt from "bcrypt";
 
+import gravatar from "gravatar";
+
 import User from "../db/models/user.js";
 
 import HttpError from "../helpers/HttpError.js";
@@ -22,6 +24,7 @@ export const updateUser = async (query, data) => {
 
 export const signupUser = async (payload) => {
   const { email, password } = payload;
+
   const user = await User.findOne({
     where: {
       email,
@@ -32,12 +35,17 @@ export const signupUser = async (payload) => {
   }
 
   const hashPassword = await bcrypt.hash(password, 10);
+  const avatarURL = gravatar.url(email, { s: "250", d: "retro" }, true);
 
-  const newUser = await User.create({ ...payload, password: hashPassword });
+  const newUser = await User.create({
+    ...payload,
+    password: hashPassword,
+    avatarURL,
+  });
   return newUser;
 };
 
-export const siginUser = async (payload) => {
+export const signinUser = async (payload) => {
   const { email, password } = payload;
   const user = await User.findOne({
     where: {
@@ -74,4 +82,8 @@ export const changeSubscription = async (query, { subscription }) => {
 
 export const signoutUser = (query) => {
   return updateUser(query, { token: null });
+};
+
+export const changeAvatar = async (query, avatarURL) => {
+  return updateUser(query, { avatarURL });
 };
